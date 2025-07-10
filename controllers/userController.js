@@ -8,12 +8,15 @@ exports.signup = catchAsync(async (req, res) => {
         firstname,
         lastname,
         email,
-        password
+        password,
+        confirmPassword
     } = req.body
 
     const userExists = await User.findOne({ email })
 
     if (userExists) return res.status(400).json({ status: 'error', msg: 'Invalid email '})
+
+    if (password !== confirmPassword) return res.status(400).json({ status: 'error', msg: "passwords do not match" })
 
     const hashedPassword = await bcrypt.hash(password, parseInt(process.env.PWD_HASH_LENGTH))
 
