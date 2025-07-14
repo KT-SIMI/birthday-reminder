@@ -74,3 +74,27 @@ exports.getLogout = catchAsync(async (req, res, next) => {
         res.json({ status: "success", msg: "Logged out" });
     });
 })
+
+exports.getMessage = catchAsync ( async (req, res) => {
+    const userId = req.query.userId
+    const friendId = req.query.friendId
+
+    const user = await User.findOne({ _id: userId }, { password: 0 })
+
+    const friendIndex = user.friends.findIndex((f) => f.id === friendId)
+
+    const friend = user.friends[friendIndex]
+
+
+    if (!friend.message) return res.status(404).json({ status: 'error', msg: "Fried does not have message" })
+
+    
+    res.status(200).json({ status: 'success', msg: 'Message Gotten', data: { 
+        friend, 
+        user : {
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email
+        }
+    }})
+})

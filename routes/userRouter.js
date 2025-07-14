@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get("/profile", auth, user.profile)
 router.get('/logout', auth, user.getLogout)
+router.get("/getMessage", user.getMessage)
 
 router.post('/signup', user.signup)
 router.post('/login', user.login)

@@ -44,7 +44,8 @@ const sessOption = {
 
 const allowedOrigins = [
   "http://localhost:3330",
-  "http://localhost:5373"
+  "http://localhost:5373",
+  "https://birthday-reminder-092d.onrender.com"
 ];
 
 const corsOptions = {
