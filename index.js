@@ -83,6 +83,21 @@ app.get("/", (req, res) => {
   res.send("API is up!");
 });
 
+app.get("/cron/send-birthday-messages", async (req, res) => {
+  const auth = req.query.key
+  if (auth !== process.env.CRON_SECRET) return res.status(403).json({ status: 'error', msg: "Not Authorized" })
+  try {
+    const users = await User.find({}, "_id");
+    for (const user of users) {
+      await sendBirthdayMessage(user._id);
+    }
+    res.send("Birthday messages sent.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error sending messages.");
+  }
+});
+
 app.use("/api", userRouter)
 app.use("/api/client", auth, clientRouter)
 
