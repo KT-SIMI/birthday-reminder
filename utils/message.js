@@ -86,7 +86,7 @@ exports.sendBirthdayMessage = async (userId) => {
             <div class="container">
               <h2>Hey ${friend.name}! 🎉</h2>
               <p>You’ve got a special birthday message waiting just for you.</p>
-              <a class="btn" href="${process.env.BIRTHDAY_APP}/message?friendId=${friend._id}&userId=${userId}">Read it now</a>
+              <a class="btn" href="${process.env.BIRTHDAY_APP}/message?friendId=${id}&userId=${userId}">Read it now</a>
             </div>
           </body>
         </html>
@@ -133,3 +133,14 @@ cron.schedule('5 0 * * *', async () => {
     console.error('❌ Error sending birthday messages:', err);
   }
 });
+
+
+const f = async () => {
+  const users = await User.find({}, '_id');
+    for (const user of users) {
+      await exports.sendBirthdayMessage(user._id);
+    }
+    console.log(`[${new Date().toISOString()}] ✅ Birthday messages sent`);
+}
+
+// f()

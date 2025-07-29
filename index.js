@@ -12,7 +12,7 @@ require("dotenv").config();
 (async () => {
   try {
     mongoose.connect(process.env.MONGO_URL, {
-      serverSelectionTimeoutMS: 25000,
+    serverSelectionTimeoutMS: 35000,
     });
     console.log(`DB connected`);
   } catch (err) {
