@@ -17,13 +17,25 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+    },
+
+    firebaseUID: {
+        type: String,
+        unique: true
     },
     friends: {
         type: [Object]
     },
     DOB: {
         type: Date,
+    },
+    provider: {
+        type: String,
+        required: true
+    },
+    lastLogin: {
+        type: Date,
+        default: new Date()
     }
 })
 

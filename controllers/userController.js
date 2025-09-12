@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const admin = require("../utils/firebaseAdmin")
 
 exports.signup = catchAsync(async (req, res) => {
     const {
@@ -14,7 +15,7 @@ exports.signup = catchAsync(async (req, res) => {
 
     const userExists = await User.findOne({ email })
 
-    if (userExists) return res.status(400).json({ status: 'error', msg: 'Invalid email '})
+    if (userExists) return res.status(400).json({ status: 'error', msg: 'Invalid email ' })
 
     if (password !== confirmPassword) return res.status(400).json({ status: 'error', msg: "passwords do not match" })
 
@@ -24,7 +25,8 @@ exports.signup = catchAsync(async (req, res) => {
         firstname,
         lastname,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        provider: "local"
     })
 
     await user.save()
@@ -43,6 +45,8 @@ exports.login = catchAsync(async (req, res) => {
 
     if (!user) return res.status(404).json({ status: 'error', msg: 'Invalid email or password' })
 
+    if (!user.password) return res.status(400).json({ status: 'error', msg: 'Invalid login method' })
+
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) return res.status(401).json({ status: 'error', msg: 'Invalid email or password' })
@@ -54,12 +58,15 @@ exports.login = catchAsync(async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' })
     req.session.token = token;
 
+    user.lastLogin = new Date()
+    await user.save()
+
     const q = await User.findOne({ _id: user._id }, { password: 0 })
 
     res.status(200).json({ status: 'success', msg: 'Logged in successfully', data: q })
 })
 
-exports.profile = catchAsync (async (req, res) => {
+exports.profile = catchAsync(async (req, res) => {
     const userId = req.user.userId
 
     const user = await User.findOne({ _id: userId }, { password: 0 })
@@ -75,7 +82,7 @@ exports.getLogout = catchAsync(async (req, res, next) => {
     });
 })
 
-exports.getMessage = catchAsync ( async (req, res) => {
+exports.getMessage = catchAsync(async (req, res) => {
     const userId = req.query.userId
     const friendId = req.query.friendId
 
@@ -88,13 +95,57 @@ exports.getMessage = catchAsync ( async (req, res) => {
 
     if (!friend.message) return res.status(404).json({ status: 'error', msg: "Fried does not have message" })
 
-    
-    res.status(200).json({ status: 'success', msg: 'Message Gotten', data: { 
-        friend, 
-        user : {
-            firstname: user.firstname,
-            lastname: user.lastname,
-            email: user.email
+
+    res.status(200).json({
+        status: 'success', msg: 'Message Gotten', data: {
+            friend,
+            user: {
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email
+            }
         }
-    }})
+    })
+})
+
+exports.googleSignIn = catchAsync(async (req, res) => {
+    const token = req.headers.authorization?.split("Bearer ")[1];
+
+    if (!token) return res.status(401).json({ status: 'error', msg: "Missing token" })
+
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    // console.log("Decoded User::", decoded)
+
+    let user = await User.findOne({ $or: [{ firebaseUID: decoded.uid }, { email: decoded.email }] })
+
+
+    if (!user) {
+        const nameParts = decoded.name ? decoded.name.split(" ") : ["", ""]
+
+        user = new User({
+            firstname: nameParts[0] || "FirstName",
+            lastname: nameParts.slice(1).join(" ") || "LastName",
+            email: decoded.email,
+            firebaseUID: decoded.uid,
+            provider: decoded.firebase.sign_in_provider,
+        })
+
+        await user.save()
+
+    } else {
+        user.lastLogin = new Date()
+        await user.save()
+    }
+
+    const payload = {
+        userId: user._id
+    }
+
+    const Token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' })
+    req.session.token = Token;
+
+    const q = await User.findOne({ _id: user._id }, { password: 0 })
+
+    res.status(200).json({ status: 'success', msg: 'Signed In successfully', data: q })
 })

@@ -86,7 +86,7 @@ exports.sendBirthdayMessage = async (userId) => {
             <div class="container">
               <h2>Hey ${friend.name}! 🎉</h2>
               <p>You’ve got a special birthday message waiting just for you.</p>
-              <a class="btn" href="${process.env.BIRTHDAY_APP}/message?friendId=${id}&userId=${userId}">Read it now</a>
+              <a class="btn" href="${friend.link}">Read it now</a>
             </div>
           </body>
         </html>

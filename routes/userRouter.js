@@ -10,5 +10,6 @@ router.get("/getMessage", user.getMessage)
 
 router.post('/signup', user.signup)
 router.post('/login', user.login)
+router.post('/googleSignIn', user.googleSignIn)
 
 module.exports = router 

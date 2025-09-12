@@ -9,6 +9,7 @@ router.get('/deleteFriend', client.deleteFriend)
 router.post('/addBirthday', client.addYourBirthday)
 router.post('/addFriend', client.addFriend)
 router.post('/addMessage', client.addAMessage)
+router.post('/editFriend', client.editFriend)
 
 
 module.exports = router 
