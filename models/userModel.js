@@ -21,7 +21,6 @@ const userSchema = new mongoose.Schema({
 
     firebaseUID: {
         type: String,
-        unique: true
     },
     friends: {
         type: [Object]
@@ -38,6 +37,11 @@ const userSchema = new mongoose.Schema({
         default: new Date()
     }
 })
+
+userSchema.index(
+    { firebaseUID: 1 },
+    { unique: true, partialFilterExpression: { firebaseUID: { $exists: true, $ne: null } } }
+);
 
 const User = mongoose.model("User", userSchema);
 

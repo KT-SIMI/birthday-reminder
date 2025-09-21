@@ -45,7 +45,7 @@ exports.addFriend = catchAsync(async (req, res) => {
 
   await canAddMessage(userId)
 
-  res.status(200).json({ status: 'success', msg: 'Friend added successfully' })
+  res.status(200).json({ status: 'success', msg: 'Friend added successfully', data: friend })
 })
 
 exports.editFriend = catchAsync(async (req, res) => {
@@ -83,7 +83,7 @@ exports.editFriend = catchAsync(async (req, res) => {
 
    await canAddMessage(userId)
 
-  res.status(200).json({ status: 'success', msg: 'Friend edited successfully' })
+  res.status(200).json({ status: 'success', msg: 'Friend edited successfully', data: friend  })
 })
 
 exports.deleteFriend = catchAsync(async (req, res) => {
@@ -135,6 +135,7 @@ exports.addAMessage = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    msg: 'Message added successfully'
+    msg: 'Message added successfully',
+    data: user.friends[friendIndex]
   });
 });
